@@ -1,13 +1,14 @@
 // Vercel Serverless Function to send WhatsApp messages.
 // This file goes in the /api directory.
 
-const axios = require('axios');
+import axios from 'axios';
 
 // This handler function will be executed by Vercel when a request comes to /api/send-whatsapp
 export default async function handler(request, response) {
     // Only allow POST requests
     if (request.method !== 'POST') {
-        return response.status(405).json({ message: 'Only POST requests allowed' });
+        response.setHeader('Allow', ['POST']);
+        return response.status(405).json({ message: 'Only POST requests are allowed' });
     }
 
     const { message } = request.body;
@@ -17,12 +18,10 @@ export default async function handler(request, response) {
     }
 
     // Load credentials securely from Vercel's Environment Variables
-    const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-    const WHATSAPP_PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-    const RECIPIENT_PHONE_NUMBER = process.env.RECIPIENT_PHONE_NUMBER;
+    const { WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, RECIPIENT_PHONE_NUMBER } = process.env;
     
     if (!WHATSAPP_ACCESS_TOKEN || !WHATSAPP_PHONE_NUMBER_ID || !RECIPIENT_PHONE_NUMBER) {
-        console.error("Missing environment variables");
+        console.error("Server Configuration Error: Missing one or more required environment variables.");
         return response.status(500).json({ success: false, error: 'Server configuration error.' });
     }
 
@@ -47,7 +46,7 @@ export default async function handler(request, response) {
         await axios.post(apiUrl, payload, { headers });
         response.status(200).json({ success: true, message: 'Message sent successfully.' });
     } catch (error) {
-        console.error('Error sending WhatsApp message:', error.response ? error.response.data : error.message);
-        response.status(500).json({ success: false, error: 'Failed to send message.', details: error.response ? error.response.data : {} });
+        console.error('Error sending WhatsApp message:', error.response ? error.response.data.error.message : error.message);
+        response.status(500).json({ success: false, error: 'Failed to send message.' });
     }
 }
