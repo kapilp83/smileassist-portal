@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmileAssist – Intraoral Camera Support</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* Custom Styles & Tailwind Config */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* A very light gray (slate-50) */
+        }
+        .section-hidden {
+            display: none;
+        }
+        .nav-active {
+            color: #3b82f6; /* blue-500 */
+            font-weight: 600;
+        }
+        
+        /* Thematic Page Transitions */
+        .page-section, .kb-view, .tr-view {
+             transition: opacity 0.35s ease-in-out, transform 0.35s ease-in-out;
+        }
+
+        .is-exiting {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        
+        .is-entering {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        /* Loading Spinner and Message Styles */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+        .status-message.show {
+            opacity: 1;
+            bottom: 40px;
+        }
+        .status-message.success {
+            background-color: #28a745;
+        }
+        .status-message.error {
+            background-color: #dc3545;
+        }
+
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="text-blue-500">
+                        <i class="fa-solid fa-tooth fa-2x"></i>
+                    </div>
+                    <a href="#" id="home-link" class="text-xl font-bold text-gray-800 hover:text-blue-600 transition">SmileAssist</a>
+                </div>
+                <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-500">
+                    <a href="#knowledge-base" data-section="knowledge-base" class="hover:text-blue-600 transition nav-link">Knowledge Base</a>
+                    <a href="#submit-request" data-section="submit-request" class="hover:text-blue-600 transition nav-link">Submit a Ticket</a>
+                    <a href="#training" data-section="training" class="hover:text-blue-600 transition nav-link">Training</a>
+                    <a href="#request-demo" data-section="request-demo" class="hover:text-blue-600 transition nav-link">Request Demo</a>
+                </nav>
+                <div class="md:hidden">
+                     <button id="mobile-menu-button" class="text-gray-600 hover:text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+         <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#knowledge-base" data-section="knowledge-base" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 nav-link">Knowledge Base</a>
+                <a href="#submit-request" data-section="submit-request" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 nav-link">Submit a Ticket</a>
+                <a href="#training" data-section="training" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 nav-link">Training</a>
+                <a href="#request-demo" data-section="request-demo" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 nav-link">Request Demo</a>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" class="relative">
+        <!-- Homepage Section -->
+        <section id="homepage" class="page-section">
+            <!-- Hero Section -->
+            <div class="bg-blue-50">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+                        Welcome to <span class="text-blue-600">SmileAssist</span>
+                    </h1>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Your one-stop support portal for digital dentistry.</p>
+                    <div class="mt-8 flex justify-center items-center flex-wrap gap-4">
+                        <button data-section="submit-request" class="nav-link bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                            Start a Support Request
+                        </button>
+                         <button data-section="request-demo" class="nav-link bg-green-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-green-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                            Request Demo
+                        </button>
+                         <button data-section="rent-out" class="nav-link bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-purple-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50">
+                            Rent Out
+                        </button>
+                        <button data-section="training" class="nav-link bg-white text-gray-800 font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-gray-100 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50">
+                            Watch Getting Started Video
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Access Tiles -->
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 text-center">
+                    <a href="#knowledge-base" data-section="knowledge-base" class="nav-link group block bg-white p-6 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="text-4xl text-blue-500 group-hover:text-blue-600 transition-colors"><i class="fa-solid fa-book-open"></i></div>
+                        <h3 class="mt-4 font-semibold">Knowledge Base</h3>
+                    </a>
+                    <a href="#training" data-section="training" class="nav-link group block bg-white p-6 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="text-4xl text-blue-500 group-hover:text-blue-600 transition-colors"><i class="fa-solid fa-video"></i></div>
+                        <h3 class="mt-4 font-semibold">Training Videos</h3>
+                    </a>
+                    <a href="#knowledge-base" data-kb-target="kb-troubleshooting" data-section="knowledge-base" class="nav-link group block bg-white p-6 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="text-4xl text-blue-500 group-hover:text-blue-600 transition-colors"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <h3 class="mt-4 font-semibold">Troubleshooting</h3>
+                    </a>
+                    <a href="#submit-request" data-section="submit-request" class="nav-link group block bg-white p-6 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="text-4xl text-blue-500 group-hover:text-blue-600 transition-colors"><i class="fa-solid fa-envelope"></i></div>
+                        <h3 class="mt-4 font-semibold">Submit a Request</h3>
+                    </a>
+                    <a href="#knowledge-base" data-kb-target="kb-warranty" data-section="knowledge-base" class="nav-link group block bg-white p-6 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="text-4xl text-blue-500 group-hover:text-blue-600 transition-colors"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h3 class="mt-4 font-semibold">Warranty & Repairs</h3>
+                    </a>
+                    <a href="https://wa.me/8169212049" target="_blank" class="group block bg-white p-6 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="text-4xl text-blue-500 group-hover:text-blue-600 transition-colors"><i class="fa-brands fa-whatsapp"></i></div>
+                        <h3 class="mt-4 font-semibold">Live Chat</h3>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Latest Alerts Section -->
+            <div class="bg-gray-100">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <h2 class="text-3xl font-bold text-center mb-8">Latest Alerts</h2>
+                    <div class="max-w-4xl mx-auto space-y-4">
+                        <div class="bg-white p-5 rounded-lg shadow-sm flex items-start space-x-4">
+                            <div class="bg-blue-100 text-blue-600 rounded-full h-10 w-10 flex-shrink-0 flex items-center justify-center">
+                                <i class="fa-solid fa-microchip"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Firmware Update: New Firmware v2.1.5 for Model X Released</p>
+                                <p class="text-sm text-gray-500">June 15, 2025 - This update includes performance improvements and bug fixes. Please visit the downloads section to update your device.</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm flex items-start space-x-4">
+                            <div class="bg-green-100 text-green-600 rounded-full h-10 w-10 flex-shrink-0 flex items-center justify-center">
+                                <i class="fa-solid fa-chalkboard-user"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Webinar: Join our live webinar on "Advanced Imaging Techniques"</p>
+                                <p class="text-sm text-gray-500">July 5, 2025 - Learn from experts on how to get the most out of your intraoral camera. <a href="#training" data-section="training" class="nav-link text-blue-600 hover:underline">Register Now</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Knowledge Base Section -->
+        <section id="knowledge-base" class="page-section section-hidden container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            
+            <div id="kb-main-view" class="kb-view">
+                <h2 class="text-3xl font-bold text-center mb-10">Knowledge Base</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <a href="#" data-kb-target="kb-scanner" class="kb-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="h-14 flex items-center justify-center">
+                           <img src="https://i.ibb.co/L542x3S/IOC.png" alt="Intra Oral Scanner" class="h-full w-auto">
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Intra Oral Scanner</h3>
+                        <p class="mt-2 text-gray-500">Guides, videos, and articles for your scanner.</p>
+                    </a>
+                    <a href="#" data-kb-target="kb-physio" class="kb-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="h-14 flex items-center justify-center">
+                           <img src="https://i.ibb.co/C2n5c9d/Dental-Drill.png" alt="Physio Dispenser" class="h-full w-auto">
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Physio Dispenser</h3>
+                        <p class="mt-2 text-gray-500">Setup, usage, and maintenance information.</p>
+                    </a>
+                    <a href="#" data-kb-target="kb-activators" class="kb-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"><div class="text-5xl text-blue-500"><i class="fa-solid fa-bolt"></i></div><h3 class="mt-4 text-xl font-semibold">Implant Surface Activators</h3><p class="mt-2 text-gray-500">Best practices and technical specifications.</p></a>
+                    <a href="#" data-kb-target="kb-implant" class="kb-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"><div class="text-5xl text-blue-500"><i class="fa-solid fa-bone"></i></div><h3 class="mt-4 text-xl font-semibold">Implant Systems</h3><p class="mt-2 text-gray-500">Comprehensive guides for various implant systems.</p></a>
+                    <a href="#" data-kb-target="kb-endo" class="kb-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"><div class="text-5xl text-blue-500"><i class="fa-solid fa-file-waveform"></i></div><h3 class="mt-4 text-xl font-semibold">Endo File Systems</h3><p class="mt-2 text-gray-500">Information on endodontic file systems.</p></a>
+                </div>
+            </div>
+
+            <div id="kb-scanner" class="kb-view kb-subpage section-hidden"><a href="#" class="kb-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Knowledge Base</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Intra Oral Scanner</h3><h4 class="text-2xl font-semibold mt-6 mb-4">Videos</h4><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="bg-gray-200 h-40 rounded-lg flex items-center justify-center text-gray-500">Video Placeholder</div><div class="bg-gray-200 h-40 rounded-lg flex items-center justify-center text-gray-500">Video Placeholder</div></div><h4 class="text-2xl font-semibold mt-6 mb-4">Audios / Podcasts</h4><div class="bg-gray-200 h-20 rounded-lg flex items-center justify-center text-gray-500">Audio Player Placeholder</div><h4 class="text-2xl font-semibold mt-6 mb-4">Blogs</h4><div class="bg-gray-200 h-24 rounded-lg flex items-center justify-center text-gray-500">Blog Post Excerpt Placeholder</div><h4 class="text-2xl font-semibold mt-6 mb-4">Articles / Whitepapers</h4><div class="bg-gray-200 h-24 rounded-lg flex items-center justify-center text-gray-500">Article Link Placeholder</div></div>
+            <div id="kb-physio" class="kb-view kb-subpage section-hidden"><a href="#" class="kb-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Knowledge Base</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Physio Dispenser</h3><div class="text-center py-10 text-gray-500">Content Coming Soon...</div></div>
+            <div id="kb-activators" class="kb-view kb-subpage section-hidden"><a href="#" class="kb-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Knowledge Base</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Implant Surface Activators</h3><div class="text-center py-10 text-gray-500">Content Coming Soon...</div></div>
+            <div id="kb-implant" class="kb-view kb-subpage section-hidden"><a href="#" class="kb-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Knowledge Base</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Implant Systems</h3><div class="text-center py-10 text-gray-500">Content Coming Soon...</div></div>
+            <div id="kb-endo" class="kb-view kb-subpage section-hidden"><a href="#" class="kb-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Knowledge Base</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Endo File Systems</h3><div class="text-center py-10 text-gray-500">Content Coming Soon...</div></div>
+        </section>
+
+        <!-- Support Ticket System Section -->
+        <section id="submit-request" class="page-section section-hidden bg-gray-100 py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-center mb-2">Submit a Support Request</h2>
+                    <p class="text-center text-gray-500 mb-8">We'll get back to you as soon as possible.</p>
+                    <form id="support-form" class="space-y-6"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label for="name" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="name" name="name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div><label for="clinic_name" class="block text-sm font-medium text-gray-700">Clinic Name</label><input type="text" id="clinic_name" name="clinic_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label for="email" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="email" name="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div><label for="phone" class="block text-sm font-medium text-gray-700">Phone</label><input type="tel" id="phone" name="phone" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div></div><div><label for="serial_number" class="block text-sm font-medium text-gray-700">Serial Number</label><input type="text" id="serial_number" name="serial_number" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div><label for="description" class="block text-sm font-medium text-gray-700">Description of Issue</label><textarea id="description" name="description" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label for="contact_time" class="block text-sm font-medium text-gray-700">Preferred Contact Time</label><input type="datetime-local" id="contact_time" name="contact_time" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div><div><label for="file_upload" class="block text-sm font-medium text-gray-700">Upload Image/Video</label><input type="file" id="file_upload" name="file_upload" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"></div></div><div><button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">Submit Ticket</button></div></form>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Request Demo Section -->
+        <section id="request-demo" class="page-section section-hidden bg-gray-100 py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-center mb-2">Request a Product Demonstration</h2>
+                    <p class="text-center text-gray-500 mb-8">See our products in action. Fill out the form and we'll schedule a demo.</p>
+                    <form id="demo-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label for="demo_name" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="demo_name" name="demo_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                            <div><label for="demo_clinic_name" class="block text-sm font-medium text-gray-700">Clinic Name</label><input type="text" id="demo_clinic_name" name="demo_clinic_name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label for="demo_email" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="demo_email" name="demo_email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                            <div><label for="demo_phone" class="block text-sm font-medium text-gray-700">Phone</label><input type="tel" id="demo_phone" name="demo_phone" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                        </div>
+                        <div>
+                            <label for="demo_equipment" class="block text-sm font-medium text-gray-700">Select Equipment for Demo</label>
+                            <select id="demo_equipment" name="demo_equipment" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option>Intra Oral Scanner</option>
+                                <option>Physio-Dispenser</option>
+                                <option>Surface Activator</option>
+                                <option>Implant System</option>
+                                <option>Endo Files System</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="demo_time" class="block text-sm font-medium text-gray-700">Preferred Demo Date & Time</label>
+                            <input type="datetime-local" id="demo_time" name="demo_time" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="demo_message" class="block text-sm font-medium text-gray-700">Additional Questions (Optional)</label>
+                            <textarea id="demo_message" name="demo_message" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                        <div><button type="submit" class="w-full bg-green-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-green-700 transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 flex items-center justify-center">Submit Demo Request</button></div>
+                    </form>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Rent Out Section -->
+        <section id="rent-out" class="page-section section-hidden bg-gray-100 py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg text-center">
+                    <div class="text-5xl text-purple-600 mb-4"><i class="fa-solid fa-calendar-check"></i></div>
+                    <h2 class="text-3xl font-bold text-center mb-2">Rent Equipment</h2>
+                    <p class="text-center text-gray-500 mb-8">Interested in renting our equipment? Please contact us directly via WhatsApp for options, pricing, and availability.</p>
+                    <a href="https://wa.me/8169212049?text=Hello%2C%20I'm%20interested%20in%20renting%20equipment." target="_blank" class="inline-block bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-purple-700 transition">
+                        Contact Us for Rentals
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Training and Webinar Section -->
+        <section id="training" class="page-section section-hidden container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+            <div id="tr-main-view" class="tr-view">
+                <h2 class="text-3xl font-bold text-center mb-10">Training Videos & Webinars</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <a href="#" data-tr-target="tr-scanner" class="tr-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="h-14 flex items-center justify-center">
+                           <img src="https://i.ibb.co/L542x3S/IOC.png" alt="Intra Oral Scanner" class="h-full w-auto">
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Intra Oral Scanner</h3>
+                        <p class="mt-2 text-gray-500">Installation and training videos.</p>
+                    </a>
+                    <a href="#" data-tr-target="tr-physio" class="tr-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                        <div class="h-14 flex items-center justify-center">
+                            <img src="https://i.ibb.co/C2n5c9d/Dental-Drill.png" alt="Physio Dispenser" class="h-full w-auto">
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold">Physio Dispenser</h3>
+                        <p class="mt-2 text-gray-500">Installation and training videos.</p>
+                    </a>
+                    <a href="#" data-tr-target="tr-activators" class="tr-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"><div class="text-5xl text-blue-500"><i class="fa-solid fa-bolt"></i></div><h3 class="mt-4 text-xl font-semibold">Implant Surface Activators</h3><p class="mt-2 text-gray-500">Installation and training videos.</p></a>
+                    <a href="#" data-tr-target="tr-implant" class="tr-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"><div class="text-5xl text-blue-500"><i class="fa-solid fa-bone"></i></div><h3 class="mt-4 text-xl font-semibold">Implant Systems</h3><p class="mt-2 text-gray-500">Installation and training videos.</p></a>
+                    <a href="#" data-tr-target="tr-endo" class="tr-tile group block bg-white p-8 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"><div class="text-5xl text-blue-500"><i class="fa-solid fa-file-waveform"></i></div><h3 class="mt-4 text-xl font-semibold">Endo File Systems</h3><p class="mt-2 text-gray-500">Installation and training videos.</p></a>
+                    <a href="#webinar-signup" class="group block bg-blue-50 p-8 rounded-xl shadow-sm hover:shadow-lg hover:bg-blue-100 hover:-translate-y-1 transition-all duration-300"><div class="text-5xl text-blue-500"><i class="fa-solid fa-chalkboard-user"></i></div><h3 class="mt-4 text-xl font-semibold">Live Webinars</h3><p class="mt-2 text-gray-500">Sign up for live training sessions with experts.</p></a>
+                </div>
+            </div>
+
+            <div id="tr-scanner" class="tr-view tr-subpage section-hidden"><a href="#" class="tr-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Training</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Intra Oral Scanner Training</h3><h4 class="text-2xl font-semibold mt-6 mb-4">Installation Videos</h4><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="bg-white rounded-lg shadow-md p-4"><div class="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 mb-3">Video</div><h5 class="font-semibold">Unboxing & Setup</h5></div><div class="bg-white rounded-lg shadow-md p-4"><div class="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 mb-3">Video</div><h5 class="font-semibold">Driver Installation</h5></div></div><h4 class="text-2xl font-semibold mt-8 mb-4">Training Videos</h4><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"><div class="bg-white rounded-lg shadow-md p-4"><div class="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 mb-3">Video</div><h5 class="font-semibold">Basic Scanning</h5></div><div class="bg-white rounded-lg shadow-md p-4"><div class="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 mb-3">Video</div><h5 class="font-semibold">Advanced Techniques</h5></div><div class="bg-white rounded-lg shadow-md p-4"><div class="bg-gray-200 h-32 rounded-lg flex items-center justify-center text-gray-500 mb-3">Video</div><h5 class="font-semibold">Software Integration</h5></div></div></div>
+            <div id="tr-physio" class="tr-view tr-subpage section-hidden"><a href="#" class="tr-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Training</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Physio Dispenser Training</h3><div class="text-center py-10 text-gray-500">Videos Coming Soon...</div></div>
+            <div id="tr-activators" class="tr-view tr-subpage section-hidden"><a href="#" class="tr-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Training</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Implant Surface Activators Training</h3><div class="text-center py-10 text-gray-500">Videos Coming Soon...</div></div>
+            <div id="tr-implant" class="tr-view tr-subpage section-hidden"><a href="#" class="tr-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Training</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Implant Systems Training</h3><div class="text-center py-10 text-gray-500">Videos Coming Soon...</div></div>
+            <div id="tr-endo" class="tr-view tr-subpage section-hidden"><a href="#" class="tr-back-link mb-6 inline-block text-blue-600 hover:underline"><i class="fas fa-arrow-left mr-2"></i>Back to Training</a><h3 class="text-3xl font-bold mb-8 border-b pb-4">Endo File Systems Training</h3><div class="text-center py-10 text-gray-500">Videos Coming Soon...</div></div>
+
+             <div id="webinar-signup" class="mt-16"><h3 class="text-2xl font-semibold mb-6">Live Webinars</h3><div class="bg-blue-50 rounded-lg p-8 flex flex-col md:flex-row items-center gap-8"><div class="md:w-2/3"><h4 class="text-xl font-bold text-blue-800">Advanced Imaging Techniques</h4><p class="text-gray-600 mt-2">Join our expert panel on July 5, 2025, for a deep dive into advanced diagnostic imaging. Learn new techniques, ask questions in a live Q&A, and earn CE credits.</p></div><div class="w-full md:w-1/3"><button class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition transform hover:scale-105">Register for Webinar</button></div></div></div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white"><div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8"><div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left"><p class="text-sm text-gray-400">&copy; 2025 SmileAssist. All rights reserved.</p><nav class="flex gap-6 mt-4 md:mt-0"><a href="#" class="text-sm text-gray-300 hover:text-white transition">About Us</a><a href="#" class="text-sm text-gray-300 hover:text-white transition">Privacy Policy</a><a href="#" class="text-sm text-gray-300 hover:text-white transition">Terms of Service</a></nav><div class="flex justify-center gap-6 mt-4 md:mt-0"><a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-linkedin fa-lg"></i></a><a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-twitter fa-lg"></i></a><a href="#" class="text-gray-400 hover:text-white transition"><i class="fab fa-youtube fa-lg"></i></a></div></div></div></footer>
+
+    <!-- Floating Live Chat Widget -->
+    <a href="https://wa.me/8169212049?text=Hello%20SmileAssist%20Support" target="_blank" class="fixed bottom-5 right-5 bg-green-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-lg transform hover:scale-110 transition"><i class="fab fa-whatsapp fa-2x"></i></a>
+    
+    <!-- Status Message Element -->
+    <div id="status-message" class="status-message"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mainContent = document.getElementById('main-content');
+        const pageSections = document.querySelectorAll('.page-section');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const supportForm = document.getElementById('support-form');
+        const demoForm = document.getElementById('demo-form');
+        const homeLink = document.getElementById('home-link');
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        const kbMainView = document.getElementById('kb-main-view');
+        const kbTiles = document.querySelectorAll('.kb-tile');
+        const kbViews = document.querySelectorAll('.kb-view');
+        const kbBackLinks = document.querySelectorAll('.kb-back-link');
+        
+        const trMainView = document.getElementById('tr-main-view');
+        const trTiles = document.querySelectorAll('.tr-tile');
+        const trViews = document.querySelectorAll('.tr-view');
+        const trBackLinks = document.querySelectorAll('.tr-back-link');
+
+        let activeSection = document.querySelector('.page-section:not(.section-hidden)');
+        let activeKbView = document.querySelector('.kb-view:not(.section-hidden)');
+        let activeTrView = document.querySelector('.tr-view:not(.section-hidden)');
+
+        const transitionDuration = 350;
+        
+        // --- Status Message Function ---
+        const statusMessage = document.getElementById('status-message');
+        function showStatusMessage(message, isSuccess) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message'; // Reset classes
+            statusMessage.classList.add(isSuccess ? 'success' : 'error', 'show');
+            
+            setTimeout(() => {
+                statusMessage.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Generic API Call Function ---
+        async function sendMessageToServer(endpoint, message, button) {
+            const originalButtonText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<div class="loader"></div>';
+
+            try {
+                // The URL for the Vercel serverless function
+                const response = await fetch(`/api/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.ok) {
+                    showStatusMessage('Message sent successfully!', true);
+                    return true;
+                } else {
+                    const errorData = await response.json();
+                    console.error('Server error:', errorData);
+                    showStatusMessage('Failed to send message. Please try again.', false);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Network or server error:', error);
+                showStatusMessage('Could not connect to the server. Please check the backend.', false);
+                return false;
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalButtonText;
+            }
+        }
+
+
+        // --- Navigation Logic ---
+        function transition(outgoing, incoming) {
+            if (outgoing) outgoing.classList.add('is-exiting');
+
+            setTimeout(() => {
+                if (outgoing) {
+                    outgoing.classList.add('section-hidden');
+                    outgoing.classList.remove('is-exiting');
+                }
+                if (incoming) {
+                    incoming.classList.add('is-entering');
+                    incoming.classList.remove('section-hidden');
+                    requestAnimationFrame(() => incoming.classList.remove('is-entering'));
+                }
+            }, outgoing ? transitionDuration : 0);
+        }
+        
+        function showSection(sectionId) {
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection && targetSection !== activeSection) {
+                transition(activeSection, targetSection);
+                activeSection = targetSection;
+                window.scrollTo(0, 0);
+                mobileMenu.classList.add('hidden');
+            }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sectionId = this.getAttribute('data-section');
+                if (sectionId) showSection(sectionId);
+            });
+        });
+
+        homeLink.addEventListener('click', (e) => { e.preventDefault(); showSection('homepage'); });
+
+        function showKbSubpage(targetId) {
+            const targetView = document.getElementById(targetId);
+            if (targetView && targetView !== activeKbView) {
+                transition(activeKbView, targetView);
+                activeKbView = targetView;
+            }
+        }
+        function resetKbView() { showKbSubpage('kb-main-view'); }
+        kbTiles.forEach(tile => tile.addEventListener('click', (e) => { e.preventDefault(); showKbSubpage(e.currentTarget.getAttribute('data-kb-target')); }));
+        kbBackLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); resetKbView(); }));
+
+        function showTrSubpage(targetId) {
+            const targetView = document.getElementById(targetId);
+            if (targetView && targetView !== activeTrView) {
+                transition(activeTrView, targetView);
+                activeTrView = targetView;
+            }
+        }
+        function resetTrView() { showTrSubpage('tr-main-view'); }
+        trTiles.forEach(tile => tile.addEventListener('click', (e) => { e.preventDefault(); showTrSubpage(e.currentTarget.getAttribute('data-tr-target')); }));
+        trBackLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); resetTrView(); }));
+        
+        mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        
+        // --- Form Submissions ---
+        supportForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitButton = e.currentTarget.querySelector('button[type="submit"]');
+            const now = new Date();
+            const ticketId = `SA-${now.getFullYear().toString().slice(-2)}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}-${Math.floor(100 + Math.random() * 900)}`;
+            const formData = new FormData(supportForm);
+            const name = formData.get('name');
+            const clinicName = formData.get('clinic_name');
+            const phone = formData.get('phone');
+            const description = formData.get('description');
+            let message = `*New Support Ticket: ${ticketId}*\n\n*Name:* ${name}\n*Clinic:* ${clinicName}\n*Phone:* ${phone}\n*Issue:* ${description}`;
+            
+            const success = await sendMessageToServer('send-whatsapp', message, submitButton);
+            if (success) supportForm.reset();
+        });
+
+        demoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitButton = e.currentTarget.querySelector('button[type="submit"]');
+            const formData = new FormData(demoForm);
+            const name = formData.get('demo_name');
+            const clinicName = formData.get('demo_clinic_name');
+            const phone = formData.get('demo_phone');
+            const equipment = formData.get('demo_equipment');
+            const demoTime = formData.get('demo_time');
+            let message = `*New Demo Request*\n\n*Name:* ${name}\n*Clinic:* ${clinicName}\n*Phone:* ${phone}\n*Equipment:* ${equipment}`;
+            
+            if (demoTime) {
+                const formattedTime = new Date(demoTime).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+                message += `\n*Preferred Time:* ${formattedTime}`;
+            }
+
+            const success = await sendMessageToServer('send-whatsapp', message, submitButton);
+            if (success) demoForm.reset();
+        });
+    });
+    </script>
+</body>
+</html>
